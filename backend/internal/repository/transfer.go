@@ -48,6 +48,14 @@ func (r *TransferRepo) Update(t *model.TransferRequest) error {
 
 type AlertRepo struct{}
 
+func (r *AlertRepo) GetByID(id int64) (*model.CertAlert, error) {
+	var a model.CertAlert
+	if err := model.DB.Preload("SeafarerCertificate.CertificateType").Preload("Seafarer").First(&a, id).Error; err != nil {
+		return nil, err
+	}
+	return &a, nil
+}
+
 func (r *AlertRepo) List(seafarerID int64, level, isHandled int8) ([]model.CertAlert, int64, error) {
 	var list []model.CertAlert
 	var total int64

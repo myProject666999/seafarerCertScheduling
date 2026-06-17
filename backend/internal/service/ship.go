@@ -7,6 +7,7 @@ import (
 	"seafarer-cert-scheduling/internal/repository"
 
 	"github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 )
 
 type ShipService struct {
@@ -29,10 +30,31 @@ func (s *ShipService) GetShipByID(id int64) (*model.Ship, error) {
 	return s.shipRepo.GetByID(id)
 }
 
+func normalizeEmptyStrToNil(s *string) *string {
+	if s == nil {
+		return nil
+	}
+	if *s == "" {
+		return nil
+	}
+	return s
+}
+
 func (s *ShipService) CreateShip(ship *model.Ship) error {
 	s.log.Debugf("ShipService.CreateShip name=%s", ship.Name)
 	if ship.Name == "" {
 		return errors.New("船名不能为空")
+	}
+	ship.IMONumber = normalizeEmptyStrToNil(ship.IMONumber)
+	ship.MMSI = normalizeEmptyStrToNil(ship.MMSI)
+	if ship.IMONumber != nil {
+		existing, err := s.shipRepo.GetByIMONumber(*ship.IMONumber)
+		if err == nil && existing != nil {
+			return errors.New("该 IMO 号已存在")
+		}
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			return err
+		}
 	}
 	return s.shipRepo.Create(ship)
 }
@@ -44,8 +66,18 @@ func (s *ShipService) UpdateShip(ship *model.Ship) error {
 		return err
 	}
 	existing.Name = ship.Name
-	existing.IMONumber = ship.IMONumber
-	existing.MMSI = ship.MMSI
+	newIMO := normalizeEmptyStrToNil(ship.IMONumber)
+	if newIMO != nil {
+		found, err := s.shipRepo.GetByIMONumber(*newIMO)
+		if err == nil && found != nil && found.ID != ship.ID {
+			return errors.New("该 IMO 号已存在")
+		}
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			return err
+		}
+	}
+	existing.IMONumber = newIMO
+	existing.MMSI = normalizeEmptyStrToNil(ship.MMSI)
 	existing.ShipType = ship.ShipType
 	if ship.GrossTonnage != nil {
 		existing.GrossTonnage = ship.GrossTonnage

@@ -31,6 +31,14 @@ func (r *ShipRepo) GetByID(id int64) (*model.Ship, error) {
 	return &s, nil
 }
 
+func (r *ShipRepo) GetByIMONumber(imo string) (*model.Ship, error) {
+	var s model.Ship
+	if err := model.DB.Where("imo_number = ?", imo).First(&s).Error; err != nil {
+		return nil, err
+	}
+	return &s, nil
+}
+
 func (r *ShipRepo) Create(s *model.Ship) error {
 	return model.DB.Create(s).Error
 }

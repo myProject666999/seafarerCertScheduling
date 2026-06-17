@@ -5,8 +5,8 @@ import "time"
 type Ship struct {
 	ID           int64      `json:"id" gorm:"primaryKey;autoIncrement"`
 	Name         string     `json:"name" gorm:"size:100;not null"`
-	IMONumber    string     `json:"imo_number" gorm:"size:20;uniqueIndex"`
-	MMSI         string     `json:"mmsi" gorm:"size:20"`
+	IMONumber    *string    `json:"imo_number" gorm:"size:20;uniqueIndex"`
+	MMSI         *string    `json:"mmsi" gorm:"size:20"`
 	ShipType     string     `json:"ship_type" gorm:"size:50"`
 	GrossTonnage *float64   `json:"gross_tonnage" gorm:"type:decimal(10,2)"`
 	FlagState    string     `json:"flag_state" gorm:"size:50"`

@@ -28,11 +28,13 @@ func (s *AlertService) List(seafarerID int64, level, isHandled int8) ([]model.Ce
 
 func (s *AlertService) HandleAlert(id int64, remark string) error {
 	s.log.Debugf("AlertService.HandleAlert id=%d", id)
-	var alert model.CertAlert
-	alert.ID = id
+	alert, err := s.alertRepo.GetByID(id)
+	if err != nil {
+		return err
+	}
 	alert.IsHandled = 1
 	alert.HandleRemark = remark
-	return s.alertRepo.Update(&alert)
+	return s.alertRepo.Update(alert)
 }
 
 func (s *AlertService) RunDailyAlertScan() (int, error) {

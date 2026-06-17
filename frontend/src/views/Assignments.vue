@@ -75,8 +75,14 @@
           </el-select>
         </el-form-item>
         <el-form-item label="岗位">
-          <el-select v-model="addForm.ship_position_id" filterable placeholder="选择岗位" style="width:100%">
-            <el-option v-for="p in shipPositions" :key="p.id" :label="p.position_name" :value="p.id" />
+          <el-select
+            v-model="addForm.ship_position_id"
+            filterable
+            :placeholder="addForm.ship_id ? (shipPositions.length ? '选择岗位' : '该船暂无岗位，请先到船舶管理页面配置') : '请先选择船舶'"
+            :disabled="!addForm.ship_id"
+            style="width:100%"
+          >
+            <el-option v-for="p in shipPositions" :key="p.id" :label="`${p.position_name}（${p.department || '未分组'}）`" :value="p.id" />
           </el-select>
         </el-form-item>
         <el-form-item label="上船日期">

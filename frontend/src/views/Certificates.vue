@@ -193,7 +193,7 @@ async function loadCertTypes() {
   certTypeLoading.value = true
   try {
     const res = await getCertTypes()
-    certTypes.value = res.data || []
+    certTypes.value = res.data?.items || []
   } catch (e) {
     ElMessage.error(e.message || '加载证书类型失败')
   } finally {

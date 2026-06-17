@@ -125,7 +125,7 @@ func (h *CertificateHandler) DeleteType(c *fiber.Ctx) error {
 }
 
 func (h *CertificateHandler) ListBySeafarer(c *fiber.Ctx) error {
-	seafarerID, err := strconv.ParseInt(c.Params("seafarer_id"), 10, 64)
+	seafarerID, err := strconv.ParseInt(c.Query("seafarer_id"), 10, 64)
 	if err != nil {
 		return c.JSON(model.ErrorResponse(-1, "无效的船员ID"))
 	}

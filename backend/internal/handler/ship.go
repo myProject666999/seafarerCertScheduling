@@ -90,7 +90,7 @@ func (h *ShipHandler) Delete(c *fiber.Ctx) error {
 }
 
 func (h *ShipHandler) ListPositions(c *fiber.Ctx) error {
-	shipID, err := strconv.ParseInt(c.Params("ship_id"), 10, 64)
+	shipID, err := strconv.ParseInt(c.Query("ship_id"), 10, 64)
 	if err != nil {
 		return c.JSON(model.ErrorResponse(-1, "无效的船舶ID"))
 	}
@@ -169,7 +169,7 @@ func (h *ShipHandler) DeleteCertReq(c *fiber.Ctx) error {
 }
 
 func (h *ShipHandler) ListCertReqs(c *fiber.Ctx) error {
-	positionID, err := strconv.ParseInt(c.Params("position_id"), 10, 64)
+	positionID, err := strconv.ParseInt(c.Query("position_id"), 10, 64)
 	if err != nil {
 		return c.JSON(model.ErrorResponse(-1, "无效的岗位ID"))
 	}

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"strconv"
+	"time"
 
 	"seafarer-cert-scheduling/internal/model"
 	"seafarer-cert-scheduling/internal/service"
@@ -15,6 +16,35 @@ type SeafarerHandler struct {
 
 func NewSeafarerHandler(svc *service.SeafarerService) *SeafarerHandler {
 	return &SeafarerHandler{svc: svc}
+}
+
+type seafarerDTO struct {
+	Name     string `json:"name"`
+	Gender   int8   `json:"gender"`
+	Birthday string `json:"birthday"`
+	IDNumber string `json:"id_number"`
+	Phone    string `json:"phone"`
+	Email    string `json:"email"`
+	Rank     string `json:"rank"`
+	Status   int8   `json:"status"`
+}
+
+func (d *seafarerDTO) toModel() model.Seafarer {
+	s := model.Seafarer{
+		Name:     d.Name,
+		Gender:   d.Gender,
+		IDNumber: d.IDNumber,
+		Phone:    d.Phone,
+		Email:    d.Email,
+		Rank:     d.Rank,
+		Status:   d.Status,
+	}
+	if d.Birthday != "" {
+		if t, err := time.Parse("2006-01-02", d.Birthday); err == nil {
+			s.Birthday = &t
+		}
+	}
+	return s
 }
 
 func (h *SeafarerHandler) List(c *fiber.Ctx) error {
@@ -48,15 +78,16 @@ func (h *SeafarerHandler) Get(c *fiber.Ctx) error {
 }
 
 func (h *SeafarerHandler) Create(c *fiber.Ctx) error {
-	var body model.Seafarer
+	var body seafarerDTO
 	if err := c.BodyParser(&body); err != nil {
 		return c.JSON(model.ErrorResponse(-1, "请求参数错误"))
 	}
 
-	if err := h.svc.Create(&body); err != nil {
+	m := body.toModel()
+	if err := h.svc.Create(&m); err != nil {
 		return c.JSON(model.ErrorResponse(-1, err.Error()))
 	}
-	return c.JSON(model.SuccessResponse(body))
+	return c.JSON(model.SuccessResponse(m))
 }
 
 func (h *SeafarerHandler) Update(c *fiber.Ctx) error {
@@ -65,16 +96,17 @@ func (h *SeafarerHandler) Update(c *fiber.Ctx) error {
 		return c.JSON(model.ErrorResponse(-1, "无效的ID"))
 	}
 
-	var body model.Seafarer
+	var body seafarerDTO
 	if err := c.BodyParser(&body); err != nil {
 		return c.JSON(model.ErrorResponse(-1, "请求参数错误"))
 	}
-	body.ID = id
+	m := body.toModel()
+	m.ID = id
 
-	if err := h.svc.Update(&body); err != nil {
+	if err := h.svc.Update(&m); err != nil {
 		return c.JSON(model.ErrorResponse(-1, err.Error()))
 	}
-	return c.JSON(model.SuccessResponse(body))
+	return c.JSON(model.SuccessResponse(m))
 }
 
 func (h *SeafarerHandler) Delete(c *fiber.Ctx) error {

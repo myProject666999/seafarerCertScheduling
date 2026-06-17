@@ -38,7 +38,21 @@ func (s *ShipService) CreateShip(ship *model.Ship) error {
 }
 
 func (s *ShipService) UpdateShip(ship *model.Ship) error {
-	return s.shipRepo.Update(ship)
+	s.log.Debugf("ShipService.UpdateShip id=%d", ship.ID)
+	existing, err := s.shipRepo.GetByID(ship.ID)
+	if err != nil {
+		return err
+	}
+	existing.Name = ship.Name
+	existing.IMONumber = ship.IMONumber
+	existing.MMSI = ship.MMSI
+	existing.ShipType = ship.ShipType
+	if ship.GrossTonnage != nil {
+		existing.GrossTonnage = ship.GrossTonnage
+	}
+	existing.FlagState = ship.FlagState
+	existing.Status = ship.Status
+	return s.shipRepo.Update(existing)
 }
 
 func (s *ShipService) DeleteShip(id int64) error {
@@ -63,7 +77,17 @@ func (s *ShipService) CreatePosition(sp *model.ShipPosition) error {
 }
 
 func (s *ShipService) UpdatePosition(sp *model.ShipPosition) error {
-	return s.positionRepo.UpdatePosition(sp)
+	s.log.Debugf("ShipService.UpdatePosition id=%d", sp.ID)
+	existing, err := s.positionRepo.GetPositionByID(sp.ID)
+	if err != nil {
+		return err
+	}
+	existing.ShipID = sp.ShipID
+	existing.PositionName = sp.PositionName
+	existing.Department = sp.Department
+	existing.RequiredCount = sp.RequiredCount
+	existing.SortOrder = sp.SortOrder
+	return s.positionRepo.UpdatePosition(existing)
 }
 
 func (s *ShipService) DeletePosition(id int64) error {

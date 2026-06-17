@@ -8,12 +8,17 @@ import (
 
 type CertificateTypeRepo struct{}
 
-func (r *CertificateTypeRepo) ListTypes() ([]model.CertificateType, error) {
+func (r *CertificateTypeRepo) ListTypes(page, pageSize int) ([]model.CertificateType, int64, error) {
 	var list []model.CertificateType
-	if err := model.DB.Order("id ASC").Find(&list).Error; err != nil {
-		return nil, err
+	var total int64
+	offset := (page - 1) * pageSize
+	if err := model.DB.Model(&model.CertificateType{}).Count(&total).Error; err != nil {
+		return nil, 0, err
 	}
-	return list, nil
+	if err := model.DB.Order("id ASC").Limit(pageSize).Offset(offset).Find(&list).Error; err != nil {
+		return nil, 0, err
+	}
+	return list, total, nil
 }
 
 func (r *CertificateTypeRepo) GetTypeByID(id int64) (*model.CertificateType, error) {

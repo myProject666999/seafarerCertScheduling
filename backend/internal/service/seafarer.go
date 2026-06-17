@@ -41,7 +41,21 @@ func (s *SeafarerService) Update(sf *model.Seafarer) error {
 	if sf.ID <= 0 {
 		return errors.New("无效的船员ID")
 	}
-	return s.repo.Update(sf)
+	existing, err := s.repo.GetByID(sf.ID)
+	if err != nil {
+		return err
+	}
+	existing.Name = sf.Name
+	existing.Gender = sf.Gender
+	if sf.Birthday != nil {
+		existing.Birthday = sf.Birthday
+	}
+	existing.IDNumber = sf.IDNumber
+	existing.Phone = sf.Phone
+	existing.Email = sf.Email
+	existing.Rank = sf.Rank
+	existing.Status = sf.Status
+	return s.repo.Update(existing)
 }
 
 func (s *SeafarerService) Delete(id int64) error {

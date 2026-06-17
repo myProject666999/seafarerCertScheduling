@@ -2,12 +2,47 @@ package handler
 
 import (
 	"strconv"
+	"time"
 
 	"seafarer-cert-scheduling/internal/model"
 	"seafarer-cert-scheduling/internal/service"
 
 	"github.com/gofiber/fiber/v2"
 )
+
+type seafarerAssignmentDTO struct {
+	SeafarerID            int64  `json:"seafarer_id"`
+	ShipID                int64  `json:"ship_id"`
+	ShipPositionID        int64  `json:"ship_position_id"`
+	EmbarkDate            string `json:"embark_date"`
+	ExpectedDisembarkDate string `json:"expected_disembark_date"`
+	Status                int8   `json:"status"`
+}
+
+func (d *seafarerAssignmentDTO) toModel() (*model.SeafarerAssignment, error) {
+	embarkDate, err := time.Parse("2006-01-02", d.EmbarkDate)
+	if err != nil {
+		return nil, err
+	}
+
+	assignment := &model.SeafarerAssignment{
+		SeafarerID:     d.SeafarerID,
+		ShipID:         d.ShipID,
+		ShipPositionID: d.ShipPositionID,
+		EmbarkDate:     embarkDate,
+		Status:         d.Status,
+	}
+
+	if d.ExpectedDisembarkDate != "" {
+		expectedDate, err := time.Parse("2006-01-02", d.ExpectedDisembarkDate)
+		if err != nil {
+			return nil, err
+		}
+		assignment.ExpectedDisembarkDate = &expectedDate
+	}
+
+	return assignment, nil
+}
 
 type AssignmentHandler struct {
 	svc *service.AssignmentService
@@ -50,15 +85,20 @@ func (h *AssignmentHandler) Get(c *fiber.Ctx) error {
 }
 
 func (h *AssignmentHandler) Create(c *fiber.Ctx) error {
-	var body model.SeafarerAssignment
-	if err := c.BodyParser(&body); err != nil {
+	var dto seafarerAssignmentDTO
+	if err := c.BodyParser(&dto); err != nil {
 		return c.JSON(model.ErrorResponse(-1, "请求参数错误"))
 	}
 
-	if err := h.svc.Create(&body); err != nil {
+	assignment, err := dto.toModel()
+	if err != nil {
+		return c.JSON(model.ErrorResponse(-1, "日期格式错误，请使用 YYYY-MM-DD 格式"))
+	}
+
+	if err := h.svc.Create(assignment); err != nil {
 		return c.JSON(model.ErrorResponse(-1, err.Error()))
 	}
-	return c.JSON(model.SuccessResponse(body))
+	return c.JSON(model.SuccessResponse(assignment))
 }
 
 func (h *AssignmentHandler) Disembark(c *fiber.Ctx) error {

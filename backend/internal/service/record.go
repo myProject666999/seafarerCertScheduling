@@ -29,7 +29,22 @@ func (s *ContractService) Create(c *model.VoyageContract) error {
 }
 
 func (s *ContractService) Update(c *model.VoyageContract) error {
-	return s.repo.Update(c)
+	s.log.Debugf("ContractService.Update id=%d", c.ID)
+	existing, err := s.repo.GetByID(c.ID)
+	if err != nil {
+		return err
+	}
+	existing.SeafarerID = c.SeafarerID
+	existing.ShipID = c.ShipID
+	existing.ContractNumber = c.ContractNumber
+	existing.StartDate = c.StartDate
+	existing.EndDate = c.EndDate
+	if c.ActualEndDate != nil {
+		existing.ActualEndDate = c.ActualEndDate
+	}
+	existing.Status = c.Status
+	existing.Remarks = c.Remarks
+	return s.repo.Update(existing)
 }
 
 type RecordService struct {
@@ -88,5 +103,19 @@ func (s *RecordService) CreateHealthRecord(r *model.HealthReexamination) error {
 }
 
 func (s *RecordService) UpdateHealthRecord(r *model.HealthReexamination) error {
-	return s.healthRepo.Update(r)
+	s.log.Debugf("RecordService.UpdateHealthRecord id=%d", r.ID)
+	existing, err := s.healthRepo.GetByID(r.ID)
+	if err != nil {
+		return err
+	}
+	existing.SeafarerID = r.SeafarerID
+	existing.ExamDate = r.ExamDate
+	if r.NextExamDate != nil {
+		existing.NextExamDate = r.NextExamDate
+	}
+	existing.ExamResult = r.ExamResult
+	existing.ExamInstitution = r.ExamInstitution
+	existing.ReportURL = r.ReportURL
+	existing.Restrictions = r.Restrictions
+	return s.healthRepo.Update(existing)
 }

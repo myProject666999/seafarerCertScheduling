@@ -29,6 +29,14 @@ func (r *ContractRepo) Create(c *model.VoyageContract) error {
 	return model.DB.Create(c).Error
 }
 
+func (r *ContractRepo) GetByID(id int64) (*model.VoyageContract, error) {
+	var c model.VoyageContract
+	if err := model.DB.Preload("Seafarer").Preload("Ship").First(&c, id).Error; err != nil {
+		return nil, err
+	}
+	return &c, nil
+}
+
 func (r *ContractRepo) Update(c *model.VoyageContract) error {
 	return model.DB.Save(c).Error
 }
@@ -97,6 +105,14 @@ func (r *HealthRepo) List(seafarerID int64) ([]model.HealthReexamination, error)
 
 func (r *HealthRepo) Create(rec *model.HealthReexamination) error {
 	return model.DB.Create(rec).Error
+}
+
+func (r *HealthRepo) GetByID(id int64) (*model.HealthReexamination, error) {
+	var rec model.HealthReexamination
+	if err := model.DB.Preload("Seafarer").First(&rec, id).Error; err != nil {
+		return nil, err
+	}
+	return &rec, nil
 }
 
 func (r *HealthRepo) Update(rec *model.HealthReexamination) error {

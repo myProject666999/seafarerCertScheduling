@@ -20,9 +20,9 @@ func NewCertificateService(typeRepo *repository.CertificateTypeRepo, certRepo *r
 	return &CertificateService{typeRepo: typeRepo, certRepo: certRepo, log: log}
 }
 
-func (s *CertificateService) ListTypes() ([]model.CertificateType, error) {
-	s.log.Debug("CertificateService.ListTypes")
-	return s.typeRepo.ListTypes()
+func (s *CertificateService) ListTypes(page, pageSize int) ([]model.CertificateType, int64, error) {
+	s.log.Debugf("CertificateService.ListTypes page=%d pageSize=%d", page, pageSize)
+	return s.typeRepo.ListTypes(page, pageSize)
 }
 
 func (s *CertificateService) GetTypeByID(id int64) (*model.CertificateType, error) {
@@ -38,7 +38,19 @@ func (s *CertificateService) CreateType(ct *model.CertificateType) error {
 }
 
 func (s *CertificateService) UpdateType(ct *model.CertificateType) error {
-	return s.typeRepo.UpdateType(ct)
+	s.log.Debugf("CertificateService.UpdateType id=%d", ct.ID)
+	existing, err := s.typeRepo.GetTypeByID(ct.ID)
+	if err != nil {
+		return err
+	}
+	existing.Name = ct.Name
+	existing.Code = ct.Code
+	existing.Description = ct.Description
+	if ct.ValidityMonths != nil {
+		existing.ValidityMonths = ct.ValidityMonths
+	}
+	existing.IsRequired = ct.IsRequired
+	return s.typeRepo.UpdateType(existing)
 }
 
 func (s *CertificateService) DeleteType(id int64) error {
@@ -68,8 +80,20 @@ func (s *CertificateService) CreateCert(sc *model.SeafarerCertificate) error {
 
 func (s *CertificateService) UpdateCert(sc *model.SeafarerCertificate) error {
 	s.log.Debugf("CertificateService.UpdateCert id=%d", sc.ID)
-	sc.Status = s.calcCertStatus(sc.ExpireDate)
-	return s.certRepo.UpdateCert(sc)
+	existing, err := s.certRepo.GetCertByID(sc.ID)
+	if err != nil {
+		return err
+	}
+	existing.SeafarerID = sc.SeafarerID
+	existing.CertificateTypeID = sc.CertificateTypeID
+	existing.CertNumber = sc.CertNumber
+	existing.IssueDate = sc.IssueDate
+	if sc.ExpireDate != nil {
+		existing.ExpireDate = sc.ExpireDate
+	}
+	existing.CertImageURL = sc.CertImageURL
+	existing.Status = s.calcCertStatus(existing.ExpireDate)
+	return s.certRepo.UpdateCert(existing)
 }
 
 func (s *CertificateService) DeleteCert(id int64) error {

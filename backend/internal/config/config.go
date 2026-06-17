@@ -35,7 +35,7 @@ func Load() *Config {
 }
 
 func (c *DatabaseConfig) DSN() string {
-	return c.User + ":" + c.Password + "@tcp(" + c.Host + ":" + c.Port + ")/" + c.DBName + "?charset=utf8mb4&parseTime=True&loc=Local"
+	return c.User + ":" + c.Password + "@tcp(" + c.Host + ":" + c.Port + ")/" + c.DBName + "?charset=utf8mb4&parseTime=True&loc=Local&timeout=30s&readTimeout=30s&writeTimeout=30s"
 }
 
 func InitLogger() *logrus.Logger {

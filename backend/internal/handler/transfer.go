@@ -20,7 +20,11 @@ func NewTransferHandler(svc *service.TransferService) *TransferHandler {
 func (h *TransferHandler) List(c *fiber.Ctx) error {
 	page := c.QueryInt("page", 1)
 	pageSize := c.QueryInt("page_size", 20)
-	status := int8(c.QueryInt("status"))
+
+	var status int8 = -1
+	if c.Query("status") != "" {
+		status = int8(c.QueryInt("status"))
+	}
 
 	items, total, err := h.svc.List(page, pageSize, status)
 	if err != nil {

@@ -57,7 +57,11 @@ func (h *AssignmentHandler) List(c *fiber.Ctx) error {
 	pageSize := c.QueryInt("page_size", 20)
 	shipID, _ := strconv.ParseInt(c.Query("ship_id"), 10, 64)
 	seafarerID, _ := strconv.ParseInt(c.Query("seafarer_id"), 10, 64)
-	status := int8(c.QueryInt("status"))
+
+	var status int8 = -1
+	if c.Query("status") != "" {
+		status = int8(c.QueryInt("status"))
+	}
 
 	items, total, err := h.svc.List(page, pageSize, shipID, seafarerID, status)
 	if err != nil {

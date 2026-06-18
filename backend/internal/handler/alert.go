@@ -20,7 +20,11 @@ func NewAlertHandler(svc *service.AlertService) *AlertHandler {
 func (h *AlertHandler) List(c *fiber.Ctx) error {
 	seafarerID, _ := strconv.ParseInt(c.Query("seafarer_id"), 10, 64)
 	level := int8(c.QueryInt("level"))
-	isHandled := int8(c.QueryInt("is_handled"))
+
+	var isHandled int8 = -1
+	if c.Query("is_handled") != "" {
+		isHandled = int8(c.QueryInt("is_handled"))
+	}
 
 	items, total, err := h.svc.List(seafarerID, level, isHandled)
 	if err != nil {
